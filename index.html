@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="css/styles.css" />
+    <title>Bulk Generation</title>
+  </head>
+  <body>
+    <video class="background-video" autoplay muted loop>
+      <source src="./video/background-video.mp4" type="video/mp4" />
+    </video>
+
+    <div class="container">
+      <div class="block">
+        <h2 class="title title-main">Bulk Cap</h2>
+        <div class="canvas-container">
+          <svg class="icon-img" id="icon-img-second">
+            <use xlink:href="./img/icons.svg#images"></use>
+          </svg>
+
+          <h2 class="title" id="title-second">Download your avatar</h2>
+
+          <canvas
+            id="canvas-second"
+            class="canvas"
+            width="400"
+            height="400"
+          ></canvas>
+        </div>
+        <div class="button-second">
+          <button id="generateBtn">Generate</button>
+          <button id="downloadEditedBtn">Download</button>
+        </div>
+      </div>
+
+      <div class="block">
+        <h2 class="title title-main">Make Your Own Outline</h2>
+        <input
+          type="file"
+          id="imageUpload"
+          accept="image/*"
+          class="image-upload"
+        />
+
+        <div class="canvas-container">
+          <svg class="icon-img" id="icon-img">
+            <use xlink:href="./img/icons.svg#images"></use>
+          </svg>
+          <h2 class="title" id="title">Download your avatar</h2>
+          <canvas id="canvas" class="canvas" width="400" height="400"></canvas>
+        </div>
+
+        <div class="controls" id="controls">
+          <div id="sliderContainer" class="slider-container">
+            <label for="scale"> Scaling</label>
+            <input
+              name="scale"
+              class="slider"
+              type="range"
+              id="sizeSlider"
+              min="0.3"
+              max="2"
+              step="0.01"
+              value="1"
+            />
+          </div>
+          <div class="color-container" id="frameColorContainer">
+            <label for="frameColor">Frame color</label>
+            <input type="color" id="frameColor" value="#000000" />
+          </div>
+        </div>
+
+        <button id="downloadBtn" class="download-btn">Download Image</button>
+      </div>
+    </div>
+    <img class="logo" src="./img/star.png" alt="logo" />
+
+    <script type="module" src="js/script.js"></script>
+    <script src="js/API.js"></script>
+  </body>
+</html>

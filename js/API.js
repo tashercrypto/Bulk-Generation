@@ -5,14 +5,7 @@ async function loadLocalLogo() {
   return new File([blob], "logo.jpg", { type: "image/jpeg" });
 }
 
-// ===============================
-// API КЛЮЧ (просто вставляем сюда)
-// ===============================
-const API_KEY = "";   // ← твой ключ
 
-// ===============================
-// ОТПРАВКА ФОТО ПОЛЬЗОВАТЕЛЯ + logo.jpg В API
-// ===============================
 export async function editUserImage(userImageFile, prompt) {
   const formData = new FormData();
   const logoFile = await loadLocalLogo();
@@ -21,10 +14,12 @@ export async function editUserImage(userImageFile, prompt) {
   formData.append("images", logoFile);
   formData.append("prompt", prompt);
 
-  const response = await fetch("https://your-backend-url/edit-image", {
-    method: "POST",
-    body: formData,
-  });
+const response = await fetch("https://bulk-generation-backend.onrender.com/edit-image", {
+  method: "POST",
+  mode: "cors",
+  body: formData
+});
+
 
   const data = await response.json();
   if (data.error) throw new Error(data.error.message);

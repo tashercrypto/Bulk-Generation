@@ -11,9 +11,10 @@ export async function editUserImage(userImageFile, prompt) {
   const logoFile = await loadLocalLogo();
 
 
-formData.append("images[]", userImageFile);
-formData.append("images[]", logoFile);
+formData.append("image", userImageFile);
+formData.append("mask", logoFile);
 formData.append("prompt", prompt);
+
 
 
   const response = await fetch("https://bulk-generation-backend.onrender.com/edit-image", {

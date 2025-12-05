@@ -4,11 +4,11 @@ export async function editUserImage(userImageFile, prompt) {
   const body = {
     model: "gpt-image-1",
     prompt: `
-      Here is the input image in base64:
-      ${imgBase64}
+Here is the image encoded as base64:
+${imgBase64}
 
-      Apply this transformation:
-      ${prompt}
+Now apply the following transformation ONLY to the headwear:
+${prompt}
     `,
     size: "1024x1024",
     n: 1
@@ -21,15 +21,23 @@ export async function editUserImage(userImageFile, prompt) {
   });
 
   const data = await response.json();
-  if (data.error) throw new Error(data.error.message);
+
+  if (data.error) {
+    console.error("API ERROR:", data.error);
+    throw new Error(data.error.message);
+  }
 
   return "data:image/png;base64," + data.data[0].b64_json;
 }
 
 function fileToBase64(file) {
-  return new Promise((resolve) => {
+  return new Promise((resolve, reject) => {
     const reader = new FileReader();
-    reader.onload = () => resolve(reader.result.split(",")[1]);
+    reader.onload = () => {
+      const base64 = reader.result.split(",")[1];
+      resolve(base64);
+    };
+    reader.onerror = reject;
     reader.readAsDataURL(file);
   });
 }

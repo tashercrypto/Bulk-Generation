@@ -388,6 +388,7 @@ canvasSecond.addEventListener("drop", (e) => {
   img.src = URL.createObjectURL(file);
 });
 
+// ГЕНЕРАЦІЯ
 generateBtn.addEventListener("click", async () => {
   if (!secondImageFile) {
     alert("Завантажте фото у другий canvas!");
@@ -410,51 +411,54 @@ generateBtn.addEventListener("click", async () => {
     
     const resultUrl = await editUserImage(secondImageFile, prompt);
 
-    console.log("📦 Result URL length:", resultUrl.length);
-    console.log("📦 First 200 chars:", resultUrl.substring(0, 200));
+    console.log("📦 Result URL received, length:", resultUrl.length);
     
-    // ⬇️ ПЕРЕВІРКА: Чи це base64 PNG?
     if (!resultUrl.startsWith("data:image/png;base64,")) {
       throw new Error("Invalid image format received");
     }
 
-    // ⬇️ ТИМЧАСОВО: Показуємо зображення в новому вікні для перевірки
-    const testWindow = window.open();
-    testWindow.document.write(`<img src="${resultUrl}" style="max-width:100%">`);
-    console.log("🔍 Test window opened - check if image has a cap!");
+    console.log("✅ Valid base64 PNG received");
 
     const img = new Image();
 
     img.onload = () => {
-      console.log("✅ Generated image loaded!");
-      console.log("🖼️ Image dimensions:", img.width, "x", img.height);
-      console.log("🎨 Drawing to canvas...");
+      console.log("✅ Image object loaded!");
+      console.log("🖼️ Dimensions:", img.width, "x", img.height);
 
       generatedImage = img;
 
-      // ⬇️ ВАЖЛИВО: Малюємо ТІЛЬКИ згенероване зображення
-      ctxSecond.clearRect(0, 0, canvasSecond.width, canvasSecond.height);
-      ctxSecond.fillStyle = "red"; // ⬅️ Червоний фон для діагностики
+      // КРОК 1: Червоний фон для діагностики
+      ctxSecond.fillStyle = "#FF0000";
       ctxSecond.fillRect(0, 0, canvasSecond.width, canvasSecond.height);
-      
+      console.log("🔴 Red background set");
+
+      // КРОК 2: Через 300ms малюємо зображення
       setTimeout(() => {
+        console.log("🎨 Drawing generated image NOW...");
         ctxSecond.clearRect(0, 0, canvasSecond.width, canvasSecond.height);
         ctxSecond.drawImage(img, 0, 0, canvasSecond.width, canvasSecond.height);
-        console.log("🎨 Image drawn to canvas");
-      }, 100);
+        console.log("✅ Image DRAWN to canvas");
+        
+        // КРОК 3: Перевірка - що намальовано?
+        const imageData = ctxSecond.getImageData(200, 200, 1, 1);
+        console.log("🔍 Pixel check (200,200):", imageData.data);
+        
+      }, 300);
 
+      // КРОК 4: Ховаємо overlay
       setTimeout(() => {
         hideCanvas2Overlay();
         isGenerating = false;
-        console.log("✅ GENERATION COMPLETE");
-      }, 500);
+        console.log("✅✅✅ GENERATION COMPLETE ✅✅✅");
+      }, 600);
     };
 
     img.onerror = (e) => {
-      console.error("❌ Image load error:", e);
+      console.error("❌ Image.onload failed:", e);
+      console.error("Result URL first 500 chars:", resultUrl.substring(0, 500));
       hideCanvas2Overlay();
       isGenerating = false;
-      alert("Помилка завантаження результату");
+      alert("Помилка завантаження згенерованого зображення");
     };
 
     console.log("🖼️ Setting img.src...");
@@ -467,6 +471,7 @@ generateBtn.addEventListener("click", async () => {
     alert("Помилка API: " + err.message);
   }
 });
+
 // ЗАВАНТАЖЕННЯ РЕЗУЛЬТАТУ
 downloadEditedBtn.addEventListener("click", () => {
   const link = document.createElement("a");

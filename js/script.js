@@ -13,7 +13,7 @@ const controls = document.getElementById("controls");
 let currentImg = null;
 let scaleFactor = 1;
 
-let generatedImage = null;
+
 
 // ---------------------------
 let offsetX = 0;

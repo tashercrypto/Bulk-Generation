@@ -9,7 +9,7 @@ export async function editUserImage(userImageFile, prompt) {
   const formData = new FormData();
   const logoFile = await loadLocalLogo();
 
-  formData.append("image", userImageFile);   
+  formData.append("images", userImageFile);   
   formData.append("prompt", prompt);
   formData.append("logo", logoFile);
 

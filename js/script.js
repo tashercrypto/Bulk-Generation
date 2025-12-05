@@ -13,6 +13,8 @@ const controls = document.getElementById("controls");
 let currentImg = null;
 let scaleFactor = 1;
 
+let generatedImage = null;
+
 // ---------------------------
 let offsetX = 0;
 let offsetY = 0;
@@ -350,31 +352,37 @@ document.getElementById("generateBtn").addEventListener("click", async () => {
     console.log("🚀 Starting generation...");
     const resultUrl = await editUserImage(secondImageFile, prompt);
     
-    console.log("📦 Result URL length:", resultUrl.length);
-    console.log("📦 First 100 chars:", resultUrl.substring(0, 100));
+    console.log("📦 Result URL received");
 
     const img = new Image();
     
     img.onload = () => {
       console.log("✅ IMG ONLOAD FIRED!");
-      console.log("Image dimensions:", img.width, "x", img.height);
-      console.log("Canvas dimensions:", canvasSecond.width, "x", canvasSecond.height);
       
+      // ⬇️ ЗБЕРІГАЄМО зображення
+      generatedImage = img;
+      
+      // Малюємо
       ctxSecond.clearRect(0, 0, canvasSecond.width, canvasSecond.height);
       ctxSecond.drawImage(img, 0, 0, canvasSecond.width, canvasSecond.height);
       
       console.log("✅ Image drawn to canvas");
       hideCanvas2Overlay();
+      
+      // ⬇️ ВАЖЛИВО: Форсуємо перемальовку через 100ms
+      setTimeout(() => {
+        ctxSecond.clearRect(0, 0, canvasSecond.width, canvasSecond.height);
+        ctxSecond.drawImage(generatedImage, 0, 0, canvasSecond.width, canvasSecond.height);
+        console.log("🔄 Canvas redrawn after timeout");
+      }, 100);
     };
     
     img.onerror = (e) => {
       console.error("❌ IMG ONERROR FIRED!");
-      console.error("Error event:", e);
       hideCanvas2Overlay();
       alert("Ошибка при загрузке результата.");
     };
     
-    console.log("🖼️ Setting img.src...");
     img.src = resultUrl;
     
   } catch (err) {

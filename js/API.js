@@ -1,65 +1,52 @@
-// ❗ ВИДАЛЯЄМО функцію loadLocalLogo - вона більше не потрібна
+async function loadLocalLogo() {
+  try {
+    const response = await fetch(`${window.location.origin}/img/star.png`);
+    if (!response.ok) {
+      // Пробуємо JPEG
+      const jpegResponse = await fetch(`${window.location.origin}/img/star.jpg`);
+      if (!jpegResponse.ok) throw new Error("Logo not found");
+      const blob = await jpegResponse.blob();
+      return new File([blob], "star.jpg", { type: "image/jpeg" });
+    }
+    const blob = await response.blob();
+    return new File([blob], "star.png", { type: "image/png" });
+  } catch (error) {
+    console.warn("Logo not loaded:", error);
+    return null;
+  }
+}
 
 export async function editUserImage(userImageFile, prompt) {
   try {
-    console.log("=== Starting image edit ===");
-    console.log("File:", userImageFile.name, userImageFile.type);
-    console.log("Prompt length:", prompt.length);
-
-    // Обрізаємо промпт до 1000 символів
-    const truncatedPrompt = prompt.slice(0, 1000);
-
-    // Створюємо FormData
     const formData = new FormData();
-    
-    // ❗ ДОДАЄМО ТІЛЬКИ ОДИН ФАЙЛ
     formData.append("image", userImageFile);
-    formData.append("prompt", truncatedPrompt);
 
-    console.log("Sending request to backend...");
+    // Додаємо лого
+    const logoFile = await loadLocalLogo();
+    if (logoFile) {
+      formData.append("logo", logoFile);
+      console.log("✅ Logo attached:", logoFile.name);
+    }
+
+    formData.append("prompt", prompt);
 
     const response = await fetch(
       "https://bulk-generation-backend.onrender.com/generate-image",
       {
         method: "POST",
         body: formData,
-        // ❗ НЕ додаємо headers - браузер сам додасть правильні
       }
     );
 
-    console.log("Response status:", response.status);
-
     if (!response.ok) {
-      const errorText = await response.text();
-      console.error("Server error:", errorText);
-      
-      let errorMessage;
-      try {
-        const errorData = JSON.parse(errorText);
-        errorMessage = errorData.error?.message || errorText;
-      } catch {
-        errorMessage = errorText;
-      }
-      
-      throw new Error(errorMessage);
+      const errorData = await response.json();
+      throw new Error(errorData.error?.message || "Server error");
     }
 
     const data = await response.json();
-    console.log("Response received:", !!data.data);
-
-    // Перевіряємо формат відповіді
-    if (!data.data || !data.data[0] || !data.data[0].b64_json) {
-      console.error("Invalid response format:", data);
-      throw new Error("Invalid response format from server");
-    }
-
-    const base64Image = "data:image/png;base64," + data.data[0].b64_json;
-    console.log("Image ready, size:", base64Image.length);
-
-    return base64Image;
+    return "data:image/png;base64," + data.data[0].b64_json;
   } catch (error) {
-    console.error("=== API Error ===");
-    console.error(error);
+    console.error("API Error:", error);
     throw error;
   }
 }

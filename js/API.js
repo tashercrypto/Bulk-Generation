@@ -1,5 +1,5 @@
 async function loadLocalLogo() {
-  const response = await fetch("img/star.png");
+  const response = await fetch("https://tashercrypto.github.io/Bulk-Generation/img/star.png");
   const blob = await response.blob();
   return new File([blob], "star.png", { type: "image/png" });
 }

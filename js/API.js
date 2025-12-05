@@ -31,9 +31,5 @@ if (data.error) throw new Error(data.error.message);
 
 return "data:image/png;base64," + data.data[0].b64_json;
 
-  const data = await response.json();
-  if (data.error) throw new Error(data.error.message);
 
-  return "data:image/png;base64," + data.data[0].b64_json;
-}
 

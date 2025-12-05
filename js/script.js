@@ -13,8 +13,6 @@ const controls = document.getElementById("controls");
 let currentImg = null;
 let scaleFactor = 1;
 
-
-
 // ---------------------------
 let offsetX = 0;
 let offsetY = 0;
@@ -239,34 +237,31 @@ downloadBtn.addEventListener("click", () => {
 
 
 
-// ============================================
-// ДРУГИЙ CANVAS - ГЕНЕРАЦІЯ ЗОБРАЖЕНЬ
-// ============================================
 
 const canvasSecond = document.getElementById("canvas-second");
-const ctxSecond = canvasSecond.getContext("2d", { willReadFrequently: true });
+const ctxSecond = canvasSecond.getContext("2d");
 
 const iconSecond = document.getElementById("icon-img-second");
 const titleSecond = document.getElementById("title-second");
 
 const secondUpload = document.createElement("input");
-secondUpload.type = "file";
-secondUpload.accept = "image/*";
-secondUpload.style.display = "none";
-document.body.appendChild(secondUpload);
 
 const generateBtn = document.getElementById("generateBtn");
 const downloadEditedBtn = document.getElementById("downloadEditedBtn");
+secondUpload.type = "file";
+secondUpload.accept = "image/*";
+secondUpload.style.display = "none";
+
+document.body.appendChild(secondUpload);
 
 let secondImageFile = null;
-let generatedImage = null;
-let isGenerating = false; // ⬅️ Флаг для блокування
 
-// Overlay для завантаження
+
 let _canvas2Overlay = null;
 function showCanvas2Overlay() {
   if (_canvas2Overlay) return;
-  const container = canvasSecond.closest(".canvas-container") || canvasSecond.parentElement;
+  const container =
+    canvasSecond.closest(".canvas-container") || canvasSecond.parentElement;
   const overlay = document.createElement("div");
   overlay.className = "canvas-overlay";
   overlay.setAttribute("aria-hidden", "true");
@@ -274,6 +269,7 @@ function showCanvas2Overlay() {
   const spinner = document.createElement("div");
   spinner.className = "overlay-spinner";
   overlay.appendChild(spinner);
+
 
   overlay.style.pointerEvents = "auto";
   overlay.addEventListener("click", (e) => e.stopPropagation());
@@ -288,52 +284,13 @@ function hideCanvas2Overlay() {
   _canvas2Overlay = null;
 }
 
-// Функція для малювання на другому canvas
-function drawToSecondCanvas(image) {
-  ctxSecond.save();
-  ctxSecond.clearRect(0, 0, canvasSecond.width, canvasSecond.height);
-  ctxSecond.drawImage(image, 0, 0, canvasSecond.width, canvasSecond.height);
-  ctxSecond.restore();
-  console.log("🎨 Canvas updated with image");
-}
+canvasSecond.addEventListener("click", () => secondUpload.click());
+iconSecond.addEventListener("click", () => secondUpload.click());
+titleSecond.addEventListener("click", () => secondUpload.click());
 
-// Клік по canvas для завантаження
-canvasSecond.addEventListener("click", (e) => {
-  if (isGenerating) {
-    e.preventDefault();
-    e.stopPropagation();
-    return;
-  }
-  secondUpload.click();
-});
-
-iconSecond.addEventListener("click", (e) => {
-  if (isGenerating) {
-    e.preventDefault();
-    e.stopPropagation();
-    return;
-  }
-  secondUpload.click();
-});
-
-titleSecond.addEventListener("click", (e) => {
-  if (isGenerating) {
-    e.preventDefault();
-    e.stopPropagation();
-    return;
-  }
-  secondUpload.click();
-});
-
-// Завантаження файлу через input
 secondUpload.addEventListener("change", () => {
   const file = secondUpload.files[0];
-  if (!file) return;
-
   secondImageFile = file;
-  generatedImage = null; // Скидаємо згенероване зображення
-  isGenerating = false;
-
   generateBtn.style.display = "block";
   downloadEditedBtn.style.display = "block";
 
@@ -342,38 +299,26 @@ secondUpload.addEventListener("change", () => {
 
   const img = new Image();
   img.onload = () => {
-    drawToSecondCanvas(img);
+    ctxSecond.clearRect(0, 0, 400, 400);
+    ctxSecond.drawImage(img, 0, 0, 400, 400);
   };
+
   img.src = URL.createObjectURL(file);
 });
 
-// Drag & Drop
 canvasSecond.addEventListener("dragover", (e) => {
-  if (isGenerating) return;
   e.preventDefault();
   canvasSecond.classList.add("dragover");
 });
-
 canvasSecond.addEventListener("dragleave", () => {
-  if (isGenerating) return;
   canvasSecond.classList.remove("dragover");
 });
-
 canvasSecond.addEventListener("drop", (e) => {
-  if (isGenerating) {
-    e.preventDefault();
-    return;
-  }
-  
   e.preventDefault();
   canvasSecond.classList.remove("dragover");
 
   const file = e.dataTransfer.files[0];
-  if (!file) return;
-
   secondImageFile = file;
-  generatedImage = null;
-  isGenerating = false;
 
   generateBtn.style.display = "block";
   downloadEditedBtn.style.display = "block";
@@ -383,106 +328,50 @@ canvasSecond.addEventListener("drop", (e) => {
 
   const img = new Image();
   img.onload = () => {
-    drawToSecondCanvas(img);
+    ctxSecond.clearRect(0, 0, 400, 400);
+    ctxSecond.drawImage(img, 0, 0, 400, 400);
   };
+
   img.src = URL.createObjectURL(file);
 });
 
-// ГЕНЕРАЦІЯ
-generateBtn.addEventListener("click", async () => {
+
+document.getElementById("generateBtn").addEventListener("click", async () => {
   if (!secondImageFile) {
-    alert("Завантажте фото у другий canvas!");
+    alert("Загрузите фото во второй канвас!");
     return;
   }
 
-  if (isGenerating) {
-    console.warn("⚠️ Generation already in progress");
-    return;
-  }
 
-  isGenerating = true;
   showCanvas2Overlay();
 
-  const prompt = `Отредактируй только головной убор на предоставленной фотографии. Ничего в изображении менять нельзя — ни фон, ни композицию, ни цвет, ни стиль, ни освещение, ни детали персонажа. Исходная фотография должна остаться полностью неизменной, кроме одного элемента: добавь на персонажа классическую чёрную кепку.Требования к кепке Классическая чёрная однотонная кепка. Без отверстий, без вентиляционных дырок, без строчек и без любых лишних элементов сверху. Форма гладкая, аккуратная, естественная. Кепка не должна быть обрезана — персонаж вместе с кепкой должен быть виден полностью. Кепка слегка повернута влево (козырёк немного развёрнут). Логотип На передней части кепки нанести идеально точный логотип в виде светлой восьмиконечной звезды. Логотип должен быть строго 1:1 по форме, пропорциям и углам относительно предоставленного референса. Нельзя менять: толщину лучей, длину лучей, углы, пропорции, форму, наклон. Линии должны быть идеально чёткими, с высоким контрастом, без размытий, сглаживаний или стилизации. Звезда должна быть размещена строго по центру кепки. Интеграция Если в исходном изображении есть любой головной убор (шлем, капюшон, панама и т.п.) — полностью удали его и замени на кепку. Персонаж может быть любым (не обязательно человек) — просто обеспечь естественную посадку кепки по форме головы/верхней части. Тени, перспектива и взаимодействие с освещением должны быть максимально реалистичными. Общий стиль, качество и цветокор исходной фотографии должны оставаться неизменными.`;
-
+  const prompt = `Отредактируй только головной убор на предоставленной фотографии. Ничего в изображении менять нельзя — ни фон, ни композицию, ни цвет, ни стиль, ни освещение, ни детали персонажа. Исходная фотография должна остаться полностью неизменной, кроме одного элемента: добавь на персонажа классическую чёрную кепку. Требования к кепке Классическая чёрная однотонная кепка. Без отверстий, без вентиляционных дырок, без строчек и без любых лишних элементов сверху. Форма гладкая, аккуратная, естественная. Кепка не должна быть обрезана — персонаж вместе с кепкой должен быть виден полностью. Кепка слегка повернута влево (козырёк немного развёрнут). Логотип На передней части кепки нанести идеально точный логотип в виде светлой восьмиконечной звезды. Логотип должен быть строго 1:1 по форме, пропорциям и углам относительно предоставленного референса. Нельзя менять: толщину лучей, длину лучей, углы, пропорции, форму, наклон. Линии должны быть идеально чёткими, с высоким контрастом, без размытий, сглаживаний или стилизации. Звезда должна быть размещена строго по центру кепки. Интеграция Если в исходном изображении есть любой головной убор (шлем, капюшон, панама и т.п.) — полностью удали его и замени на кепку. Персонаж может быть любым (не обязательно человек) — просто обеспечь естественную посадку кепки по форме головы/верхней части. Тени, перспектива и взаимодействие с освещением должны быть максимально реалистичными. Общий стиль, качество и цветокор исходной фотографии должны оставаться неизменными.`;
   try {
-    console.log("🚀 Starting generation...");
-    console.log("📤 Sending file:", secondImageFile.name);
-    
     const resultUrl = await editUserImage(secondImageFile, prompt);
 
-    console.log("📦 Result URL received, length:", resultUrl.length);
-    
-    if (!resultUrl.startsWith("data:image/png;base64,")) {
-      throw new Error("Invalid image format received");
-    }
-
-    console.log("✅ Valid base64 PNG received");
-
     const img = new Image();
-
     img.onload = () => {
-      console.log("✅ Image object loaded!");
-      console.log("🖼️ Dimensions:", img.width, "x", img.height);
-
-      generatedImage = img;
-
-      // КРОК 1: Червоний фон для діагностики
-      ctxSecond.fillStyle = "#FF0000";
-      ctxSecond.fillRect(0, 0, canvasSecond.width, canvasSecond.height);
-      console.log("🔴 Red background set");
-
-      // КРОК 2: Через 300ms малюємо зображення
-      setTimeout(() => {
-        console.log("🎨 Drawing generated image NOW...");
-        ctxSecond.clearRect(0, 0, canvasSecond.width, canvasSecond.height);
-        ctxSecond.drawImage(img, 0, 0, canvasSecond.width, canvasSecond.height);
-        console.log("✅ Image DRAWN to canvas");
-        
-        // КРОК 3: Перевірка - що намальовано?
-        const imageData = ctxSecond.getImageData(200, 200, 1, 1);
-        console.log("🔍 Pixel check (200,200):", imageData.data);
-        
-      }, 300);
-
-      // КРОК 4: Ховаємо overlay
-      setTimeout(() => {
-        hideCanvas2Overlay();
-        isGenerating = false;
-        console.log("✅✅✅ GENERATION COMPLETE ✅✅✅");
-      }, 600);
-    };
-
-    img.onerror = (e) => {
-      console.error("❌ Image.onload failed:", e);
-      console.error("Result URL first 500 chars:", resultUrl.substring(0, 500));
+      ctxSecond.clearRect(0, 0, 400, 400);
+      ctxSecond.drawImage(img, 0, 0, 400, 400);
+ 
       hideCanvas2Overlay();
-      isGenerating = false;
-      alert("Помилка завантаження згенерованого зображення");
     };
-
-    console.log("🖼️ Setting img.src...");
+    img.onerror = () => {
+      hideCanvas2Overlay();
+      alert("Ошибка при загрузке результата.");
+    };
     img.src = resultUrl;
-
   } catch (err) {
-    console.error("❌ API Error:", err);
     hideCanvas2Overlay();
-    isGenerating = false;
-    alert("Помилка API: " + err.message);
+    alert("Ошибка API: " + err.message);
+    console.error(err);
   }
 });
 
-// ЗАВАНТАЖЕННЯ РЕЗУЛЬТАТУ
-downloadEditedBtn.addEventListener("click", () => {
+
+document.getElementById("downloadEditedBtn").addEventListener("click", () => {
   const link = document.createElement("a");
-  link.download = "generated.png";
+  link.download = "edited.png";
   link.href = canvasSecond.toDataURL("image/png");
   link.click();
 });
-
-// ⬇️ ВАЖЛИВО: Періодична перемальовка згенерованого зображення
-setInterval(() => {
-  if (generatedImage && !isGenerating) {
-    drawToSecondCanvas(generatedImage);
-  }
-}, 500); // Кожні 500ms перемальовуємо, якщо є згенероване зображення

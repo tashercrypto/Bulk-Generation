@@ -388,7 +388,6 @@ canvasSecond.addEventListener("drop", (e) => {
   img.src = URL.createObjectURL(file);
 });
 
-// ГЕНЕРАЦІЯ ЗОБРАЖЕННЯ
 generateBtn.addEventListener("click", async () => {
   if (!secondImageFile) {
     alert("Завантажте фото у другий canvas!");
@@ -400,44 +399,55 @@ generateBtn.addEventListener("click", async () => {
     return;
   }
 
-  isGenerating = true; // ⬅️ Блокуємо інші події
+  isGenerating = true;
   showCanvas2Overlay();
 
   const prompt = `Replace any headwear with a classic solid black baseball cap. The cap should have a white 8-pointed star logo centered on the front panel. Keep everything else unchanged: same background, lighting, colors, character pose and details. The cap should fit naturally with realistic shadows. Cap brim slightly turned to the left.`;
 
   try {
     console.log("🚀 Starting generation...");
+    console.log("📤 Sending file:", secondImageFile.name);
+    
     const resultUrl = await editUserImage(secondImageFile, prompt);
 
-    console.log("📦 Result received, creating image...");
+    console.log("📦 Result URL length:", resultUrl.length);
+    console.log("📦 First 200 chars:", resultUrl.substring(0, 200));
+    
+    // ⬇️ ПЕРЕВІРКА: Чи це base64 PNG?
+    if (!resultUrl.startsWith("data:image/png;base64,")) {
+      throw new Error("Invalid image format received");
+    }
+
+    // ⬇️ ТИМЧАСОВО: Показуємо зображення в новому вікні для перевірки
+    const testWindow = window.open();
+    testWindow.document.write(`<img src="${resultUrl}" style="max-width:100%">`);
+    console.log("🔍 Test window opened - check if image has a cap!");
 
     const img = new Image();
 
     img.onload = () => {
       console.log("✅ Generated image loaded!");
-      console.log("Image size:", img.width, "x", img.height);
+      console.log("🖼️ Image dimensions:", img.width, "x", img.height);
+      console.log("🎨 Drawing to canvas...");
 
-      generatedImage = img; // ⬅️ Зберігаємо
+      generatedImage = img;
 
-      // Малюємо ТРИЧІ з затримкою для гарантії
-      drawToSecondCanvas(img);
+      // ⬇️ ВАЖЛИВО: Малюємо ТІЛЬКИ згенероване зображення
+      ctxSecond.clearRect(0, 0, canvasSecond.width, canvasSecond.height);
+      ctxSecond.fillStyle = "red"; // ⬅️ Червоний фон для діагностики
+      ctxSecond.fillRect(0, 0, canvasSecond.width, canvasSecond.height);
+      
+      setTimeout(() => {
+        ctxSecond.clearRect(0, 0, canvasSecond.width, canvasSecond.height);
+        ctxSecond.drawImage(img, 0, 0, canvasSecond.width, canvasSecond.height);
+        console.log("🎨 Image drawn to canvas");
+      }, 100);
 
       setTimeout(() => {
-        drawToSecondCanvas(img);
-        console.log("🔄 Redraw 1");
-      }, 50);
-
-      setTimeout(() => {
-        drawToSecondCanvas(img);
-        console.log("🔄 Redraw 2");
-      }, 150);
-
-      setTimeout(() => {
-        drawToSecondCanvas(img);
-        console.log("🔄 Redraw 3 - FINAL");
         hideCanvas2Overlay();
-        isGenerating = false; // ⬅️ Розблоковуємо
-      }, 300);
+        isGenerating = false;
+        console.log("✅ GENERATION COMPLETE");
+      }, 500);
     };
 
     img.onerror = (e) => {
@@ -457,7 +467,6 @@ generateBtn.addEventListener("click", async () => {
     alert("Помилка API: " + err.message);
   }
 });
-
 // ЗАВАНТАЖЕННЯ РЕЗУЛЬТАТУ
 downloadEditedBtn.addEventListener("click", () => {
   const link = document.createElement("a");

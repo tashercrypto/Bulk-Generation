@@ -342,24 +342,41 @@ document.getElementById("generateBtn").addEventListener("click", async () => {
     return;
   }
 
-
   showCanvas2Overlay();
 
-  const prompt = `Replace any headwear with a classic solid black baseball cap. The cap should have a white 8-pointed star logo centered on the front panel. Keep everything else unchanged: same background, lighting, colors, character pose and details. The cap should fit naturally with realistic shadows. Cap brim slightly turned to the left.`;  try {
+  const prompt = `Replace any headwear with a classic solid black baseball cap. The cap should have a white 8-pointed star logo centered on the front panel. Keep everything else unchanged: same background, lighting, colors, character pose and details. The cap should fit naturally with realistic shadows. Cap brim slightly turned to the left.`;
+
+  try {
+    console.log("🚀 Starting generation...");
     const resultUrl = await editUserImage(secondImageFile, prompt);
+    
+    console.log("📦 Result URL length:", resultUrl.length);
+    console.log("📦 First 100 chars:", resultUrl.substring(0, 100));
 
     const img = new Image();
+    
     img.onload = () => {
-      ctxSecond.clearRect(0, 0, 400, 400);
-      ctxSecond.drawImage(img, 0, 0, 400, 400);
- 
+      console.log("✅ IMG ONLOAD FIRED!");
+      console.log("Image dimensions:", img.width, "x", img.height);
+      console.log("Canvas dimensions:", canvasSecond.width, "x", canvasSecond.height);
+      
+      ctxSecond.clearRect(0, 0, canvasSecond.width, canvasSecond.height);
+      ctxSecond.drawImage(img, 0, 0, canvasSecond.width, canvasSecond.height);
+      
+      console.log("✅ Image drawn to canvas");
       hideCanvas2Overlay();
     };
-    img.onerror = () => {
+    
+    img.onerror = (e) => {
+      console.error("❌ IMG ONERROR FIRED!");
+      console.error("Error event:", e);
       hideCanvas2Overlay();
       alert("Ошибка при загрузке результата.");
     };
+    
+    console.log("🖼️ Setting img.src...");
     img.src = resultUrl;
+    
   } catch (err) {
     hideCanvas2Overlay();
     alert("Ошибка API: " + err.message);

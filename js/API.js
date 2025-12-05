@@ -1,7 +1,7 @@
 async function loadLocalLogo() {
-  const response = await fetch("img/logo.jpg");
+  const response = await fetch("img/star.png");
   const blob = await response.blob();
-  return new File([blob], "logo.jpg", { type: "image/jpg" });
+  return new File([blob], "star.png", { type: "image/png" });
 }
 
 

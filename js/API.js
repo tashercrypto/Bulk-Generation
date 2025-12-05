@@ -4,6 +4,7 @@ async function loadLocalLogo() {
   return new File([blob], "logo.png", { type: "image/png" });
 }
 
+
 export async function editUserImage(userImageFile, prompt) {
   const formData = new FormData();
   const logoFile = await loadLocalLogo();

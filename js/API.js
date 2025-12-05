@@ -1,30 +1,35 @@
-async function loadLocalLogo() {
-  const response = await fetch("https://tashercrypto.github.io/Bulk-Generation/img/star.png");
-  const blob = await response.blob();
-  return new File([blob], "mask.png", { type: "image/png" });
-}
-
-
-
 export async function editUserImage(userImageFile, prompt) {
-  const formData = new FormData();
-  const logoFile = await loadLocalLogo();
+  const imgBase64 = await fileToBase64(userImageFile);
 
+  const body = {
+    model: "gpt-image-1",
+    prompt: `
+      Here is the input image in base64:
+      ${imgBase64}
 
-formData.append("image", userImageFile);
-formData.append("mask", logoFile);
-formData.append("prompt", prompt);
+      Apply this transformation:
+      ${prompt}
+    `,
+    size: "1024x1024",
+    n: 1
+  };
 
-
-
-  const response = await fetch("https://bulk-generation-backend.onrender.com/edit-image", {
+  const response = await fetch("https://bulk-generation-backend.onrender.com/generate-image", {
     method: "POST",
-    mode: "cors",
-    body: formData,
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
   });
 
   const data = await response.json();
   if (data.error) throw new Error(data.error.message);
 
   return "data:image/png;base64," + data.data[0].b64_json;
+}
+
+function fileToBase64(file) {
+  return new Promise((resolve) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result.split(",")[1]);
+    reader.readAsDataURL(file);
+  });
 }

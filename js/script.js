@@ -1,3 +1,5 @@
+import { editUserImage } from "./API.js";
+
 const upload = document.getElementById("imageUpload");
 const iconImg = document.getElementById("icon-img");
 const title = document.getElementById("title");
@@ -233,11 +235,9 @@ downloadBtn.addEventListener("click", () => {
   link.click();
 });
 
-import { editUserImage } from "./API.js";
 
-// ===============================
-// Второй канвас
-// ===============================
+
+
 const canvasSecond = document.getElementById("canvas-second");
 const ctxSecond = canvasSecond.getContext("2d");
 

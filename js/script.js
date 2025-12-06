@@ -21,8 +21,8 @@ let lastX = 0;
 let lastY = 0;
 let isDragging = false;
 
-
-const BASE_CANVAS_SIZE = 800;
+// ФІКСОВАНИЙ РОЗМІР для відображення
+const DISPLAY_SIZE = 400;
 
 canvas.addEventListener("click", () => upload.click());
 iconImg.addEventListener("click", () => upload.click());
@@ -111,11 +111,15 @@ function loadImageFile(file) {
       iconImg.style.pointerEvents = "none";
       title.style.display = "none";
 
-  
-      canvas.width = BASE_CANVAS_SIZE;
-      canvas.height = BASE_CANVAS_SIZE;
+      // Внутрішній розмір canvas для високої якості (х2 для Retina)
+      canvas.width = DISPLAY_SIZE * 2;
+      canvas.height = DISPLAY_SIZE * 2;
       
-      console.log("✅ Canvas size:", canvas.width, "x", canvas.height);
+      // CSS розмір для відображення (400x400)
+      canvas.style.width = DISPLAY_SIZE + "px";
+      canvas.style.height = DISPLAY_SIZE + "px";
+      
+      console.log("✅ Canvas:", canvas.width, "x", canvas.height, "→ display:", DISPLAY_SIZE + "px");
 
       drawImageWithFrame();
     };
@@ -127,9 +131,9 @@ function loadImageFile(file) {
 function drawImageWithFrame() {
   if (!currentImg) return;
 
-  const size = canvas.width; 
+  const size = canvas.width; // Внутрішній розмір (800)
   
-
+  // Налаштування якості
   ctx.imageSmoothingEnabled = true;
   ctx.imageSmoothingQuality = "high";
   
@@ -148,7 +152,7 @@ function drawImageWithFrame() {
 
   const radius = size / 2 - (size * 0.09);
 
-
+  // Малюємо зображення в круглій масці
   ctx.save();
   ctx.beginPath();
   ctx.arc(size / 2, size / 2, radius, 0, Math.PI * 2);
@@ -156,10 +160,10 @@ function drawImageWithFrame() {
   ctx.drawImage(img, x, y, w, h);
   ctx.restore();
 
-
+  // Малюємо рамку
   ctx.drawImage(frameImg, 0, 0, size, size);
 
-
+  // Малюємо зірку
   drawStarOnFrame();
 
   downloadBtn.style.display = "block";
@@ -225,6 +229,9 @@ downloadBtn.addEventListener("click", () => {
   link.click();
 });
 
+// ============================================
+// ДРУГИЙ CANVAS - ГЕНЕРАЦІЯ ЗОБРАЖЕНЬ
+// ============================================
 
 const canvasSecond = document.getElementById("canvas-second");
 const ctxSecond = canvasSecond.getContext("2d", { 
@@ -246,7 +253,7 @@ document.body.appendChild(secondUpload);
 let secondImageFile = null;
 let currentSecondImage = null;
 
-
+// Overlay для завантаження
 let _canvas2Overlay = null;
 
 function showCanvas2Overlay() {
@@ -273,44 +280,46 @@ function hideCanvas2Overlay() {
   _canvas2Overlay = null;
 }
 
-
+// ФУНКЦІЯ: Малювання зображення зберігаючи пропорції
 function drawImageToSecondCanvas(img) {
   console.log("🎨 Drawing image:", img.width, "x", img.height);
   
-
-  const maxSize = 1024;
-  let targetWidth = img.width;
-  let targetHeight = img.height;
+  // Висота завжди 400px (відображення)
+  const displayHeight = 400;
   
-
-  if (img.width > maxSize || img.height > maxSize) {
-    const scale = Math.min(maxSize / img.width, maxSize / img.height);
-    targetWidth = Math.floor(img.width * scale);
-    targetHeight = Math.floor(img.height * scale);
-  }
+  // Обчислюємо ширину зберігаючи пропорції
+  const aspectRatio = img.width / img.height;
+  const displayWidth = Math.round(displayHeight * aspectRatio);
   
-
-  canvasSecond.width = targetWidth;
-  canvasSecond.height = targetHeight;
+  // Внутрішній розмір canvas (х2 для високої якості)
+  const internalWidth = displayWidth * 2;
+  const internalHeight = displayHeight * 2;
   
-  console.log("✅ Canvas resized to:", targetWidth, "x", targetHeight);
+  canvasSecond.width = internalWidth;
+  canvasSecond.height = internalHeight;
   
-
+  // CSS розмір для відображення
+  canvasSecond.style.width = displayWidth + "px";
+  canvasSecond.style.height = displayHeight + "px";
+  
+  console.log("✅ Canvas:", internalWidth, "x", internalHeight, "→ display:", displayWidth, "x", displayHeight);
+  
+  // Малюємо з високою якістю
   ctxSecond.imageSmoothingEnabled = true;
   ctxSecond.imageSmoothingQuality = "high";
   
-  ctxSecond.clearRect(0, 0, targetWidth, targetHeight);
-  ctxSecond.drawImage(img, 0, 0, targetWidth, targetHeight);
+  ctxSecond.clearRect(0, 0, internalWidth, internalHeight);
+  ctxSecond.drawImage(img, 0, 0, internalWidth, internalHeight);
   
   console.log("✅ Image drawn with high quality");
 }
 
-
+// Клік по canvas
 canvasSecond.addEventListener("click", () => secondUpload.click());
 iconSecond.addEventListener("click", () => secondUpload.click());
 titleSecond.addEventListener("click", () => secondUpload.click());
 
-
+// Завантаження файлу
 secondUpload.addEventListener("change", () => {
   const file = secondUpload.files[0];
   if (!file) return;
@@ -329,7 +338,7 @@ secondUpload.addEventListener("change", () => {
   img.src = URL.createObjectURL(file);
 });
 
-
+// Drag & Drop
 canvasSecond.addEventListener("dragover", (e) => {
   e.preventDefault();
   canvasSecond.classList.add("dragover");
@@ -360,7 +369,7 @@ canvasSecond.addEventListener("drop", (e) => {
   img.src = URL.createObjectURL(file);
 });
 
-
+// ГЕНЕРАЦІЯ
 generateBtn.addEventListener("click", async () => {
   if (!secondImageFile) {
     alert("Завантажте фото у другий canvas!");
@@ -368,7 +377,6 @@ generateBtn.addEventListener("click", async () => {
   }
 
   showCanvas2Overlay();
-
 
   const prompt = "Add black baseball cap with logo";
 
@@ -385,10 +393,7 @@ generateBtn.addEventListener("click", async () => {
     img.onload = () => {
       console.log("✅ Generated image loaded:", img.width, "x", img.height);
       
-
       currentSecondImage = img;
-      
-
       drawImageToSecondCanvas(img);
       
       hideCanvas2Overlay();
@@ -410,10 +415,10 @@ generateBtn.addEventListener("click", async () => {
   }
 });
 
-
+// ЗАВАНТАЖЕННЯ
 downloadEditedBtn.addEventListener("click", () => {
   const link = document.createElement("a");
   link.download = "generated.png";
-  link.href = canvasSecond.toDataURL("image/png", 1.0); 
+  link.href = canvasSecond.toDataURL("image/png", 1.0);
   link.click();
 });

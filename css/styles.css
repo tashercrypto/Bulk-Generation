@@ -481,20 +481,18 @@ body {
   }
 }
 
+/* Перший canvas - завжди квадрат 400x400 */
 #canvas {
+  width: 400px !important;
+  height: 400px !important;
   max-width: 100%;
-  max-height: 800px;
-  width: auto;
-  height: auto;
   object-fit: contain;
 }
 
-
+/* Другий canvas - висота 400px, ширина адаптивна */
 #canvas-second {
+  height: 400px !important;
   max-width: 100%;
-  max-height: 800px;
-  width: auto;
-  height: auto;
   object-fit: contain;
 }
 
